@@ -24,8 +24,8 @@ connection.connect(async (err) => {
         message: 'What would you like to do?',
         choices: [
           'View all employees?',
-          'View roles?',
-          'View departments?',
+          'View all employees by role?',
+          'View all employees by department?',
           'Add employee?',
           'Add role?',
           'Add department?',
@@ -41,15 +41,15 @@ connection.connect(async (err) => {
 });
 
 
-const selections= async (userChoice) => {
+const selections = async (userChoice) => {
 
   if (userChoice === 'View all employees?') {
     viewEmployee();
   }
-  if (userChoice === 'View roles?') {
+  if (userChoice === 'View all employees by role??') {
     viewRole();
   }
-  if (userChoice === 'View departments?') {
+  if (userChoice === 'View all employees by department?') {
     viewDepartment();
   }
   if (userChoice === 'Add employee?') {
@@ -70,9 +70,11 @@ const selections= async (userChoice) => {
   }
 };
 
+// use try catch statements
 const viewEmployee = () => {
   connection.query('SELECT * FROM employees', (err, employees) => {
-    if (err) throw err; 
+    // want to see more of the tables put together like in photo
+    if (err) throw err;
     console.table(employees);
     connection.end();
   });
@@ -80,13 +82,13 @@ const viewEmployee = () => {
 
 const viewRole = () => {
   connection.query('SELECT * FROM role', (err, role) => {
-    if (err) throw err; 
+    if (err) throw err;
     console.table(role);
     connection.end();
   });
 };
 
-const viewDepartment= () => {
+const viewDepartment = () => {
   connection.query('SELECT * FROM departments', (err, departments) => {
     if (err) throw err;
     console.table(departments);
@@ -94,9 +96,59 @@ const viewDepartment= () => {
   });
 };
 
-// const addEmployee = () => {
-//   connection.query
-// }
+const addEmployee = async () => {
+  try {
+    const { first, last, role, manager } = await inquirer.prompt([
+      {
+        name: 'first',
+        type: 'input',
+        message: 'What is the employees first name?',
+
+      },
+      {
+        name: 'last',
+        type: 'input',
+        message: 'What is the employees last name?',
+      },
+      {
+        name: 'role',
+        type: 'list',
+        message: 'What is the employees role?',
+        choices: [{
+          name: 'Lead Engineer', value: 1,
+          name: 'Engineer', value: 2,
+          name: 'Sales Lead', value: 3,
+          name: 'Sales Person', value: 4,
+          name: 'HR', value: 5,
+          name: 'Lawyer', value: 6,
+        }]
+      },
+      {
+        name: 'manager',
+        type: 'list',
+        message: 'Who is the employees manager?',
+        choices: [{
+          roleChoices: {
+            name: 'Ali Wong', value: 1,
+            name: 'Amy Schumer', value: 4,
+            name: 'Tom Segura', value: 6,
+            name: 'Iliza Shlesinger', value: 9,
+            name: 'Bernie Mac', value: 10,
+            name: 'None', value: null,
+          }
+        }]
+      }
+    ]);
+    const query = 'INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)';
+    connection.query(query, [first, last, role, manager], (err, result) => {
+      if (err) throw err;
+      console.log('NEW EMPLOYEE ADDED:', result);
+      connection.end();
+    });
+  } catch (e) {
+    connection.end();
+  }
+}
 
 // const addRole = () => {
 //   connection.query
