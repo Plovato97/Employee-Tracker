@@ -15,7 +15,7 @@ const connection = mysql.createConnection({
 // connection and initial prompt questions
 connection.connect(async (err) => {
   if (err) throw err;
-  console.log(`connected as id ${connection.threadId}\n`);
+  console.log(`Employee Tracker connection id ${connection.threadId}\n`);
   try {
     const mainQuestions = await inquirer.prompt([
       {
@@ -114,29 +114,31 @@ const addEmployee = async () => {
         name: 'role',
         type: 'list',
         message: 'What is the employees role?',
-        choices: [{
-          name: 'Lead Engineer', value: 1,
-          name: 'Engineer', value: 2,
-          name: 'Sales Lead', value: 3,
-          name: 'Sales Person', value: 4,
-          name: 'HR', value: 5,
-          name: 'Lawyer', value: 6,
-        }]
+        choices: [
+
+          {name: 'Lead Engineer', value: 1},
+          {name: 'Engineer', value: 2}, 
+          {name: 'Sales Lead', value: 3},
+          {name: 'Sales Person', value: 4},
+          {name: 'HR', value: 5},
+          {name: 'Lawyer', value: 6},
+
+        ]
       },
       {
         name: 'manager',
         type: 'list',
         message: 'Who is the employees manager?',
-        choices: [{
-          roleChoices: {
-            name: 'Ali Wong', value: 1,
-            name: 'Amy Schumer', value: 4,
-            name: 'Tom Segura', value: 6,
-            name: 'Iliza Shlesinger', value: 9,
-            name: 'Bernie Mac', value: 10,
-            name: 'None', value: null,
-          }
-        }]
+        choices: [
+          
+            {name: 'Ali Wong', value: 1},
+            {name: 'Amy Schumer', value: 4},
+            {name: 'Tom Segura', value: 6},
+            {name: 'Iliza Shlesinger', value: 9},
+            {name: 'Bernie Mac', value: 10},
+            {name: 'None', value: null}
+         
+        ]
       }
     ]);
     const query = 'INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)';
@@ -145,7 +147,7 @@ const addEmployee = async () => {
       console.log('NEW EMPLOYEE ADDED:', result);
       connection.end();
     });
-  } catch (e) {
+  } catch (err) {
     connection.end();
   }
 }
@@ -154,9 +156,25 @@ const addEmployee = async () => {
 //   connection.query
 // }
 
-// const addDepartment = () => {
-//   connection.query
-// }
+const addDepartment = async () => {
+  try {
+    const { name } = await inquirer.prompt([
+      {
+        name: 'addDepartment',
+        type: 'input',
+        message: 'What department would you like to add?'
+      }
+    ]);
+    const query = 'INSERT INTO departments (name) VALUES(?)';
+    connection.query(query, [name], (err, result) => {
+      if (err) throw err;
+      console.log('New department added', result);
+      connection.end();
+    });
+  } catch (err) {
+    connection.end();
+  }
+};
 
 // const updateEmpRole = () => {
 //   connection.query
