@@ -16,6 +16,10 @@ const connection = mysql.createConnection({
 connection.connect(async (err) => {
   if (err) throw err;
   console.log(`Employee Tracker connection id ${connection.threadId}\n`);
+  start();
+});
+
+const start = async () => {
   try {
     const mainQuestions = await inquirer.prompt([
       {
@@ -24,12 +28,11 @@ connection.connect(async (err) => {
         message: 'What would you like to do?',
         choices: [
           'View all employees?',
-          'View all employees by role?',
-          'View all employees by department?',
+          'View all employee roles?',
+          'View all departments?',
           'Add employee?',
           'Add role?',
           'Add department?',
-          'Update employee role?',
           'Exit?'
         ],
       }
@@ -38,7 +41,7 @@ connection.connect(async (err) => {
   } catch (e) {
     console.log(e);
   }
-});
+};
 
 
 const selections = async (userChoice) => {
@@ -46,10 +49,10 @@ const selections = async (userChoice) => {
   if (userChoice === 'View all employees?') {
     viewEmployee();
   }
-  if (userChoice === 'View all employees by role??') {
+  if (userChoice === 'View all employee roles?') {
     viewRole();
   }
-  if (userChoice === 'View all employees by department?') {
+  if (userChoice === 'View all departments?') {
     viewDepartment();
   }
   if (userChoice === 'Add employee?') {
@@ -61,38 +64,40 @@ const selections = async (userChoice) => {
   if (userChoice === 'Add department?') {
     addDepartment();
   }
-  if (userChoice === 'Update employee role?') {
-    updateEmpRole();
-  }
   if (userChoice === 'Exit?') {
     console.log('Thank you for using Employee Tracker.')
-    exit();
+    connection.end();
   }
 };
 
-// use try catch statements
+
 const viewEmployee = () => {
-  connection.query('SELECT * FROM employees', (err, employees) => {
-    // want to see more of the tables put together like in photo
+  const query = `SELECT * FROM employees`;
+  connection.query(query, (err, employees) => {
     if (err) throw err;
     console.table(employees);
-    connection.end();
+    start();
+
   });
 };
 
 const viewRole = () => {
-  connection.query('SELECT * FROM role', (err, role) => {
+  const query = `SELECT * FROM role`;
+  connection.query(query, (err, role) => {
     if (err) throw err;
     console.table(role);
-    connection.end();
+    start();
+
   });
 };
 
 const viewDepartment = () => {
-  connection.query('SELECT * FROM departments', (err, departments) => {
+  const query = `SELECT * FROM departments`;
+  connection.query(query, (err, departments) => {
     if (err) throw err;
     console.table(departments);
-    connection.end();
+    start();
+
   });
 };
 
@@ -116,12 +121,12 @@ const addEmployee = async () => {
         message: 'What is the employees role?',
         choices: [
 
-          {name: 'Lead Engineer', value: 1},
-          {name: 'Engineer', value: 2}, 
-          {name: 'Sales Lead', value: 3},
-          {name: 'Sales Person', value: 4},
-          {name: 'HR', value: 5},
-          {name: 'Lawyer', value: 6},
+          { name: 'Lead Engineer', value: 1 },
+          { name: 'Engineer', value: 2 },
+          { name: 'Sales Lead', value: 3 },
+          { name: 'Sales Person', value: 4 },
+          { name: 'HR', value: 5 },
+          { name: 'Lawyer', value: 6 },
 
         ]
       },
@@ -130,56 +135,83 @@ const addEmployee = async () => {
         type: 'list',
         message: 'Who is the employees manager?',
         choices: [
-          
-            {name: 'Ali Wong', value: 1},
-            {name: 'Amy Schumer', value: 4},
-            {name: 'Tom Segura', value: 6},
-            {name: 'Iliza Shlesinger', value: 9},
-            {name: 'Bernie Mac', value: 10},
-            {name: 'None', value: null}
-         
+
+          { name: 'Ali Wong', value: 1 },
+          { name: 'Amy Schumer', value: 4 },
+          { name: 'Tom Segura', value: 6 },
+          { name: 'Iliza Shlesinger', value: 9 },
+          { name: 'Bernie Mac', value: 10 },
+          { name: 'None', value: null }
+
         ]
       }
     ]);
     const query = 'INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)';
     connection.query(query, [first, last, role, manager], (err, result) => {
       if (err) throw err;
-      console.log('NEW EMPLOYEE ADDED:', result);
-      connection.end();
+      console.log(`NEW EMPLOYEE ADDED:${first} ${last} `);
+      start();
+
     });
   } catch (err) {
+    console.log(err);
     connection.end();
   }
 }
 
-// const addRole = () => {
-//   connection.query
-// }
-
-const addDepartment = async () => {
+const addRole = async () => {
   try {
-    const { name } = await inquirer.prompt([
+    const { title, salary, department } = await inquirer.prompt([
       {
-        name: 'addDepartment',
+        name: 'title',
         type: 'input',
-        message: 'What department would you like to add?'
-      }
+        message: 'What is the title of the new role?',
+      },
+      {
+        name: 'salary',
+        type: 'number',
+        message: 'What is the salary for the new role?',
+      },
+      {
+        name: 'department',
+        type: 'list',
+        message: 'What department is the new role for?',
+        choices: [
+
+          { name: 'Engineer', value: 1 },
+          { name: 'Sales', value: 2 },
+          { name: 'HR', value: 3 },
+          { name: 'Legal', value: 4 }
+
+        ]
+      },
     ]);
-    const query = 'INSERT INTO departments (name) VALUES(?)';
-    connection.query(query, [name], (err, result) => {
-      if (err) throw err;
-      console.log('New department added', result);
-      connection.end();
+    const query = 'INSERT INTO role SET ?';
+    connection.query(query, { title, salary, department_id: department }, (err, title) => {
+      console.log(`NEW ROLE ADDED:${title}`);
+      start();
     });
   } catch (err) {
+    console.log(err);
     connection.end();
   }
 };
 
-// const updateEmpRole = () => {
-//   connection.query
-// }
 
-// function exit() {
-// does this need to exist or can i exit the function from the main prompt??
-// }
+const addDepartment = async () => {
+  try {
+    const newDept = await inquirer.prompt([
+      {
+        name: "name",
+        type: 'input',
+        message: "What Department would you like to add?"
+      }
+    ]);
+    connection.query('INSERT INTO departments(name) VALUES(?)', newDept.name);
+    console.log(`New department added: ${newDept.name}`);
+    start();
+  } catch (err) {
+    console.log(err);
+    connection.end();
+  }
+};
