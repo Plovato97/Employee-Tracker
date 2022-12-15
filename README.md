@@ -36,10 +36,15 @@ This will prompt the questions. Role through the questions as many times as you 
 ## Built With
 
 - JavaScript
-- MySQL
+- MySQL+
 - Node.js
   - Inquirer
   - console.table
 
 ## Screen shots
-![]src()
+
+![](images)
+
+
+## Contact
+[Plovato97 on GitHub](http://github.com/Plovato97)
